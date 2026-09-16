@@ -28,16 +28,22 @@ const TAB_INICIAL = "dashboard";
 
 const PRECIO_UNITARIO = 20;
 const PACKS = [
-  {id:"p1", nombre:"Pack 1", detalle:"Pudín Chocolate + Pudín Frutilla + Gelatina de Pata + Flan Vainilla", dotacionInicial:100},
-  {id:"p2", nombre:"Pack 2", detalle:"Flan Frutilla + Flan Chocolate + Flan Vainilla", dotacionInicial:100},
-  {id:"p3", nombre:"Pack 3", detalle:"Pudín Chocolate + Pudín Frutilla + Pudín Vainilla", dotacionInicial:100},
-  {id:"p4", nombre:"Pack 4", detalle:"Jarra 1,5 L + 3 Gelatinas Frambuesa", dotacionInicial:100},
-  {id:"p5", nombre:"Pack 5", detalle:"Jarra 1,5 L + 5 sobres Milk Shake", dotacionInicial:100},
-  {id:"p6", nombre:"Pack 6", detalle:"2 Displays Refresco Real (rojo y morado) + 2 Vasos", dotacionInicial:100},
-  {id:"p7", nombre:"Pack 7", detalle:"Avena Instantánea 300 g + Gelatina Light Frutilla", dotacionInicial:100},
-  {id:"p8", nombre:"Pack 8", detalle:"2 Cereales de 200 g", dotacionInicial:100},
-  {id:"p9", nombre:"Pack 9", detalle:"Organizador (Tupper) + Cereal Kriskao caja 220 g", dotacionInicial:100},
+  {id:"p1",  nombre:"Pack 1",  detalle:"Pudín Chocolate + Pudín Frutilla + Gelatina de Pata + Flan sabor Vainilla", dotacionInicial:100},
+  {id:"p2",  nombre:"Pack 2",  detalle:"Flan Frutilla + Flan Chocolate + Flan Vainilla", dotacionInicial:100},
+  {id:"p3",  nombre:"Pack 3",  detalle:"Pudín Chocolate + Pudín Frutilla + Pudín Vainilla", dotacionInicial:100},
+  {id:"p4",  nombre:"Pack 4",  detalle:"Jarra 1,5 L + 3 Gelatinas Frambuesa", dotacionInicial:100},
+  {id:"p5",  nombre:"Pack 5",  detalle:"Jarra 1,5 L + 5 sobres Milk Shake", dotacionInicial:100},
+  {id:"p6",  nombre:"Pack 6",  detalle:"2 Displays Refresco Real (rojo y morado) + 2 Vasos", dotacionInicial:100},
+  {id:"p7",  nombre:"Pack 7",  detalle:"Avena Instantánea 300 g + Gelatina Light Frutilla", dotacionInicial:100},
+  {id:"p8",  nombre:"Pack 8",  detalle:"Cereal Azucaraditas 200 g + Cereal Kriskao 200 g", dotacionInicial:100},
+  {id:"p9",  nombre:"Pack 9",  detalle:"2 Cereales Chocoexplosión 200 g", dotacionInicial:100},
+  {id:"p10", nombre:"Pack 10", detalle:"Organizador (Tupper) + Cereal Kriskao caja 220 g", dotacionInicial:100},
 ];
+/* Fotos por defecto — coloca estos archivos (Pack_1.png ... Pack_10.png) en la
+   misma carpeta que index.html y se mostrarán solos. Si además subes una foto
+   desde el panel de Stock, esa reemplaza a esta por defecto. */
+const DEFAULT_IMG = {};
+PACKS.forEach((p,i)=>{ DEFAULT_IMG[p.id] = `Pack_${i+1}.png`; });
 
 /* ============================================================
    PERSISTENCIA
@@ -141,6 +147,7 @@ function enterApp(){
   setTimeout(positionNavIndicator, 30);
 }
 document.getElementById("cambiarTurnoBtnD").addEventListener("click", ()=>{ state.session=null; saveState(); showLoginScreen(); });
+document.getElementById("cambiarTurnoBtnM").addEventListener("click", ()=>{ state.session=null; saveState(); showLoginScreen(); });
 
 /* ============================================================
    NAV
@@ -196,7 +203,7 @@ function renderVender(){
   grid.innerHTML = "";
   PACKS.forEach((pack,i)=>{
     const est = estadoStock(pack.id);
-    const img = state.packOverrides[pack.id].imagen;
+    const img = state.packOverrides[pack.id].imagen || DEFAULT_IMG[pack.id];
     const card = document.createElement("button");
     card.className = "pack-card" + (pack.id===packSeleccionado ? " selected":"");
     card.style.animationDelay = (i*35)+"ms";
@@ -283,12 +290,13 @@ function renderStock(){
     const pct = Math.max(0,Math.min(1,pctStock(pack.id)));
     const est = estadoStock(pack.id);
     const ov = state.packOverrides[pack.id];
+    const imgStock = ov.imagen || DEFAULT_IMG[pack.id];
     const row = document.createElement("div");
     row.className = "stock-row" + (stockUnlocked ? " editing":"");
     row.style.animationDelay = (i*30)+"ms";
     row.innerHTML = `
       <div class="stock-main-line">
-        <div class="stock-thumb-mini" style="${ov.imagen?`background-image:url('${ov.imagen}');`:''}">${ov.imagen?'':'Sin foto'}</div>
+        <div class="stock-thumb-mini" style="${imgStock?`background-image:url('${imgStock}');`:''}">${imgStock?'':'Sin foto'}</div>
         <div style="flex:1;min-width:0;"><div class="stock-row-name">${pack.nombre}</div><div class="stock-row-detail">${pack.detalle}</div></div>
         <div class="stock-bar-wrap"><div class="stock-bar-fill" style="width:${pct*100}%;background:${COLOR_MAP[est.cls]};"></div></div>
         <div class="stock-num">${disp}</div>
@@ -387,7 +395,31 @@ document.getElementById("filtroCiudad").addEventListener("change", renderHistori
 /* ============================================================
    EXPORTAR — Excel detallado (.xlsx), Word (.doc), PDF
    ============================================================ */
-function construirDatosReporte(){ const ventasActivas = state.ventas.filter(v => !v.anulada); const totalUnidades = ventasActivas.reduce((s, v) => s + v.cantidad, 0); const totalEfectivo = ventasActivas.reduce((s, v) => s + v.efectivo, 0); const filasVentas = [...state.ventas] .sort((a, b) => a.id - b.id) .map(v => { const pack = PACKS.find(p => String(p.id) === String(v.packId)); const f = new Date(v.fecha); return { ID: v.id, Fecha: f.toLocaleDateString('es-BO'), Hora: f.toLocaleTimeString('es-BO'), Vendedor: v.rep, Ciudad: v.ciudad, Pack: pack ? pack.nombre : `Pack no encontrado (${v.packId})`, Cantidad: v.cantidad, "Efectivo (Bs)": v.efectivo, Anulada: v.anulada ? "Sí" : "No" }; }); const filasStock = PACKS.map(p => { const disp = stockDisponible(p.id); const est = estadoStock(p.id); return { Pack: p.nombre, Detalle: p.detalle, "Dotación Inicial": dotacionInicial(p.id), "Total Repuesto/Ajustado": totalMovimientos(p.id), "Vendido": totalVendido(p.id), "Stock Disponible": disp, "% Stock": Math.round(pctStock(p.id) * 100) + "%", Estado: est.label, "Valor en stock (Bs)": disp * PRECIO_UNITARIO }; }); const filasMovimientos = [...state.movimientos] .sort((a, b) => a.id - b.id) .map(m => { const pack = PACKS.find(p => String(p.id) === String(m.packId)); const f = new Date(m.fecha); return { Fecha: f.toLocaleDateString('es-BO'), Hora: f.toLocaleTimeString('es-BO'), Pack: pack ? pack.nombre : `Pack no encontrado (${m.packId})`, Tipo: m.tipo === 'ajuste' ? 'Ajuste manual' : 'Reposición', Cantidad: m.cantidad }; }); const resumen = [ { Indicador: "Unidades vendidas", Valor: totalUnidades }, { Indicador: "Efectivo total recaudado (Bs)", Valor: totalEfectivo }, { Indicador: "Valor total de stock restante (Bs)", Valor: PACKS.reduce( (s, p) => s + stockDisponible(p.id) * PRECIO_UNITARIO, 0 ) }, { Indicador: "Packs con stock bajo o agotado", Valor: PACKS.filter(p => { const e = estadoStock(p.id); return e.cls === "bajo" || e.cls === "agotado"; }).length }, { Indicador: "Fecha de generación del reporte", Valor: new Date().toLocaleString('es-BO') } ]; return { filasVentas, filasStock, filasMovimientos, resumen, totalUnidades, totalEfectivo }; }
+function construirDatosReporte(){
+  const ventasActivas = state.ventas.filter(v=>!v.anulada);
+  const totalUnidades = ventasActivas.reduce((s,v)=>s+v.cantidad,0);
+  const totalEfectivo = ventasActivas.reduce((s,v)=>s+v.efectivo,0);
+  const filasVentas = [...state.ventas].sort((a,b)=>a.id-b.id).map(v=>{
+    const pack = PACKS.find(p=>p.id===v.packId); const f = new Date(v.fecha);
+    return {ID:v.id, Fecha:f.toLocaleDateString('es-BO'), Hora:f.toLocaleTimeString('es-BO'), Vendedor:v.rep, Ciudad:v.ciudad, Pack:pack.nombre, Cantidad:v.cantidad, "Efectivo (Bs)":v.efectivo, Anulada:v.anulada?"Sí":"No"};
+  });
+  const filasStock = PACKS.map(p=>{
+    const disp = stockDisponible(p.id); const est = estadoStock(p.id);
+    return {Pack:p.nombre, Detalle:p.detalle, "Dotación Inicial":dotacionInicial(p.id), "Total Repuesto/Ajustado":totalMovimientos(p.id), "Vendido":totalVendido(p.id), "Stock Disponible":disp, "% Stock":Math.round(pctStock(p.id)*100)+"%", Estado:est.label, "Valor en stock (Bs)":disp*PRECIO_UNITARIO};
+  });
+  const filasMovimientos = [...state.movimientos].sort((a,b)=>a.id-b.id).map(m=>{
+    const pack = PACKS.find(p=>p.id===m.packId); const f = new Date(m.fecha);
+    return {Fecha:f.toLocaleDateString('es-BO'), Hora:f.toLocaleTimeString('es-BO'), Pack:pack.nombre, Tipo:m.tipo==='ajuste'?'Ajuste manual':'Reposición', Cantidad:m.cantidad};
+  });
+  const resumen = [
+    {Indicador:"Unidades vendidas", Valor:totalUnidades},
+    {Indicador:"Efectivo total recaudado (Bs)", Valor:totalEfectivo},
+    {Indicador:"Valor total de stock restante (Bs)", Valor: PACKS.reduce((s,p)=>s+stockDisponible(p.id)*PRECIO_UNITARIO,0)},
+    {Indicador:"Packs con stock bajo o agotado", Valor: PACKS.filter(p=>{const e=estadoStock(p.id);return e.cls==="bajo"||e.cls==="agotado";}).length},
+    {Indicador:"Fecha de generación del reporte", Valor: new Date().toLocaleString('es-BO')},
+  ];
+  return {filasVentas, filasStock, filasMovimientos, resumen, totalUnidades, totalEfectivo};
+}
 
 document.getElementById("exportXlsxBtn").addEventListener("click", ()=>{
   if(typeof XLSX === "undefined"){

@@ -105,6 +105,7 @@ body::before{
 .topbar-brand .mark-badge{width:28px;height:28px;font-size:12px;border-radius:8px;}
 .topbar-brand .wordmark{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;}
 .session-chip{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);border-radius:99px;padding:5px 10px 5px 6px;font-size:11px;}
+.link-btn-mobile{background:rgba(255,255,255,.16);border:none;color:#fff;font-size:10px;font-weight:800;padding:4px 9px;border-radius:99px;margin-left:2px;}
 .avatar-dot{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--red));display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;flex-shrink:0;color:#1A0E00;}
 .icon-btn{background:none;border:none;color:var(--ink-soft);padding:4px;display:flex;}
 .icon-btn:hover{color:#fff;}
