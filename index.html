@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Venado — Registro de Ventas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="glow glow-1"></div><div class="glow glow-2"></div><div class="glow glow-3"></div><div class="glow glow-4"></div>
+
+<div class="login-screen" id="loginScreen">
+  <div class="login-brand-float">
+    <div class="mark-badge">V</div>
+    <div><div class="wordmark">Grupo Venado</div><div class="datestamp" id="dateStampLogin">x Grupo Lucky</div></div>
+  </div>
+  <div class="login-form-wrap">
+    <div class="login-card-glow"><div class="login-card">
+      <div class="login-logo-mark grad-text">venado.</div>
+      <p class="login-eyebrow">Acceso vendedores</p>
+      <h2 class="grad-text">Buen turno.</h2>
+      <p class="lede">Ingresa tu usuario y contraseña para empezar a registrar ventas.</p>
+      <div class="login-error hidden" id="loginError"></div>
+      <div class="field"><input type="text" id="loginUser" placeholder=" " autocomplete="username"><label>Usuario</label></div>
+      <div class="field"><input type="password" id="loginPass" placeholder=" " autocomplete="current-password"><label>Contraseña</label></div>
+      <span class="field-mini-label">Ciudad</span>
+      <div class="city-toggle" id="cityToggle">
+        <button class="city-pill" data-city="Santa Cruz">Santa Cruz</button>
+        <button class="city-pill" data-city="La Paz">La Paz</button>
+      </div>
+      <button class="btn btn-primary" id="entrarBtn">Entrar</button>
+      <p class="login-hint">Acceso interno de Grupo Venado — registro local en este dispositivo.</p>
+    </div></div>
+  </div>
+</div>
+
+<div class="hidden" id="appRoot">
+  <div class="topbar" id="mobileTopbar">
+    <div class="topbar-brand"><div class="mark-badge">V</div><span class="wordmark">Venado</span></div>
+    <span class="session-chip"><span class="avatar-dot" id="avatarDotM">--</span><span id="sessionLabelM">—</span></span>
+  </div>
+
+  <div class="shell-desktop">
+    <aside class="desktop-sidebar" id="desktopSidebar">
+      <div class="brand-row">
+        <div class="mark-badge">V</div>
+        <div><div class="wordmark">Venado</div><div class="datestamp" id="dateStampApp"></div></div>
+      </div>
+      <nav class="d-nav" id="dNav"><div class="d-nav-indicator" id="dNavIndicator"></div></nav>
+      <div class="d-session">
+        <span class="avatar-dot" id="avatarDotD">--</span>
+        <div class="d-session-text"><div class="d-session-name" id="sessionNameD">—</div><div class="d-session-city" id="sessionCityD">—</div></div>
+        <button class="d-linkbtn" id="cambiarTurnoBtnD">Salir</button>
+      </div>
+    </aside>
+
+    <div class="main-desktop">
+      <div id="tabpanel-vender">
+        <div class="view">
+          <div class="topheader"><h2>Registrar venta</h2><p>Elige un pack, ajusta la cantidad y registra la venta.</p></div>
+          <div class="pack-grid" id="packGrid"></div>
+        </div>
+        <div class="sale-bar">
+          <div class="stock-warning hidden" id="stockWarning"></div>
+          <div class="sale-row">
+            <span class="sale-pack-name" id="saleBarPackName">—</span>
+            <div class="qty-stepper"><button class="qty-btn" id="qtyMinus">−</button><input type="number" class="qty-input" id="qtyInput" value="1" min="1"><button class="qty-btn" id="qtyPlus">+</button></div>
+          </div>
+          <div class="sale-summary">
+            <div class="cash-preview">Venta en efectivo<br><b class="grad-text-2" id="cashPreview">Bs 0</b></div>
+            <button class="btn-register" id="registrarBtn">Registrar venta</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hidden" id="tabpanel-stock">
+        <div class="view">
+          <div class="topheader-row">
+            <div class="topheader"><h2>Stock disponible por pack</h2><p>Se actualiza solo con cada venta y reposición.</p></div>
+            <button class="btn-stock-unlock" id="stockUnlockBtn">🔒 Editar stock y fotos</button>
+          </div>
+          <div class="stock-list" id="stockList"></div>
+        </div>
+      </div>
+
+      <div class="hidden" id="tabpanel-historial">
+        <div class="view">
+          <div class="topheader"><h2>Historial de ventas</h2><p>Todos los registros de esta actividad, en este dispositivo.</p></div>
+          <div class="hist-toolbar">
+            <select id="filtroRep"><option value="">Todos los vendedores</option></select>
+            <select id="filtroCiudad"><option value="">Todas las ciudades</option><option>Santa Cruz</option><option>La Paz</option></select>
+            <button class="btn-export" id="exportXlsxBtn">📊 Excel completo (.xlsx)</button>
+            <button class="btn-export btn-export-alt" id="exportWordBtn">📄 Word (.doc)</button>
+            <button class="btn-export btn-export-alt" id="exportPdfBtn">🖨️ PDF</button>
+          </div>
+          <div class="hist-table-wrap"><table class="hist-table"><thead><tr><th>ID</th><th>Fecha/Hora</th><th>Vendedor</th><th>Ciudad</th><th>Pack</th><th>Cant.</th><th>Efectivo</th><th></th></tr></thead><tbody id="histBody"></tbody></table></div>
+        </div>
+      </div>
+
+      <div class="hidden" id="tabpanel-reposicion">
+        <div class="view">
+          <div class="topheader"><h2>Registrar reposición</h2><p>Cuando el cliente entrega más stock de un pack durante la actividad.</p></div>
+          <div class="repo-form">
+            <div class="form-grid">
+              <div class="form-field"><label>Pack</label><select id="repoPack"></select></div>
+              <div class="form-field"><label>Cantidad repuesta</label><input type="number" id="repoCantidad" min="1" placeholder="Ej. 200"></div>
+            </div>
+            <div class="repo-submit-row"><button class="btn-add-repo" id="repoSubmitBtn">Agregar reposición</button></div>
+          </div>
+          <p class="repo-log-title">Movimientos registrados</p>
+          <div class="hist-table-wrap"><table class="hist-table"><thead><tr><th>Fecha</th><th>Pack</th><th>Tipo</th><th>Cantidad</th></tr></thead><tbody id="repoBody"></tbody></table></div>
+        </div>
+      </div>
+
+      <div class="hidden" id="tabpanel-dashboard">
+        <div class="view">
+          <div class="topheader"><h2>Resumen de la actividad</h2><p>Ventas, efectivo y stock crítico de un vistazo.</p></div>
+          <div class="bento-grid">
+            <div class="bento-hero">
+              <span class="bento-badge">🔥 En vivo</span>
+              <div class="kpi-label">Efectivo total</div>
+              <div class="kpi-value-hero grad-text-2" id="kpiHeroValue">Bs 0</div>
+              <div class="kpi-sub" id="kpiHeroSub">0 unidades vendidas</div>
+            </div>
+            <div class="kpi-card"><div class="kpi-label">Efectivo hoy</div><div class="kpi-value" id="kpiHoy">Bs 0</div></div>
+            <div class="kpi-card"><div class="kpi-label">Pack más vendido</div><div class="kpi-value" id="kpiTop" style="font-size:18px;">—</div></div>
+          </div>
+          <div class="dash-section"><h3>Packs más vendidos</h3><div id="rankList"></div></div>
+          <div class="dash-section"><h3>Stock crítico</h3><div id="alertList"></div></div>
+        </div>
+      </div>
+
+      <div class="footer-links">
+        <button id="backupBtn">Respaldar datos (.json)</button>
+        <button id="restoreBtn">Restaurar respaldo</button>
+        <input type="file" id="restoreFile" accept=".json" class="hidden">
+      </div>
+    </div>
+  </div>
+  <nav class="bottom-nav" id="bottomNav"></nav>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
