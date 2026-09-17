@@ -87,6 +87,9 @@ body::before{
 .city-toggle{display:flex;gap:8px;margin-bottom:22px;}
 .city-pill{flex:1;padding:12px 10px;border-radius:11px;border:1.5px solid var(--line);background:var(--glass);color:var(--ink-soft);font-size:13px;font-weight:700;text-align:center;transition:all .15s;}
 .city-pill.selected{border-color:transparent;background:linear-gradient(100deg,var(--violet),var(--blue));color:#fff;box-shadow:var(--glow-violet);}
+.pago-toggle{display:flex;gap:8px;margin:10px 0;}
+.pago-pill{flex:1;padding:9px 8px;border-radius:10px;border:1.5px solid var(--line);background:var(--glass);color:var(--ink-soft);font-size:12.5px;font-weight:700;text-align:center;transition:all .15s;}
+.pago-pill.selected{border-color:transparent;background:linear-gradient(100deg,var(--gold),var(--red));color:#fff;}
 
 .login-error{font-size:12px;font-weight:700;color:var(--peligro);background:var(--peligro-bg);border-radius:10px;padding:9px 12px;margin-bottom:14px;border:1px solid rgba(255,92,106,.25);}
 .field-mini-label{font-size:11px;font-weight:800;color:var(--ink-soft);display:block;margin-bottom:9px;letter-spacing:.02em;}
@@ -255,6 +258,7 @@ tr.row-void td{opacity:.4;text-decoration:line-through;}
 
 .footer-links{display:flex;gap:14px;justify-content:center;padding:20px 16px 36px;font-size:10.5px;color:var(--ink-faint);flex-wrap:wrap;}
 .footer-links button{background:none;border:none;color:var(--ink-faint);text-decoration:underline;font-size:10.5px;}
+.footer-link-danger{color:var(--peligro) !important;font-weight:700;}
 
 /* ============================================================
    DESKTOP (>=1024px)

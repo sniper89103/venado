@@ -29,7 +29,6 @@
       <span class="field-mini-label">Ciudad</span>
       <div class="city-toggle" id="cityToggle">
         <button class="city-pill" data-city="Santa Cruz">Santa Cruz</button>
-        
       </div>
       <button class="btn btn-primary" id="entrarBtn">Entrar</button>
       <p class="login-hint">Acceso interno de Grupo Venado — registro local en este dispositivo.</p>
@@ -69,8 +68,12 @@
             <span class="sale-pack-name" id="saleBarPackName">—</span>
             <div class="qty-stepper"><button class="qty-btn" id="qtyMinus">−</button><input type="number" class="qty-input" id="qtyInput" value="1" min="1"><button class="qty-btn" id="qtyPlus">+</button></div>
           </div>
+          <div class="pago-toggle" id="pagoToggle">
+            <button class="pago-pill selected" data-metodo="efectivo">💵 Efectivo</button>
+            <button class="pago-pill" data-metodo="qr">📱 QR</button>
+          </div>
           <div class="sale-summary">
-            <div class="cash-preview">Venta en efectivo<br><b class="grad-text-2" id="cashPreview">Bs 0</b></div>
+            <div class="cash-preview">Total a cobrar<br><b class="grad-text-2" id="cashPreview">Bs 0</b></div>
             <button class="btn-register" id="registrarBtn">Registrar venta</button>
           </div>
         </div>
@@ -91,12 +94,12 @@
           <div class="topheader"><h2>Historial de ventas</h2><p>Todos los registros de esta actividad, en este dispositivo.</p></div>
           <div class="hist-toolbar">
             <select id="filtroRep"><option value="">Todos los vendedores</option></select>
-            <select id="filtroCiudad"><option value="">Todas las ciudades</option><option>Santa Cruz</option><option>La Paz</option></select>
+            <select id="filtroCiudad"><option>Santa Cruz</option></select>
             <button class="btn-export" id="exportXlsxBtn">📊 Excel completo (.xlsx)</button>
             <button class="btn-export btn-export-alt" id="exportWordBtn">📄 Word (.doc)</button>
             <button class="btn-export btn-export-alt" id="exportPdfBtn">🖨️ PDF</button>
           </div>
-          <div class="hist-table-wrap"><table class="hist-table"><thead><tr><th>ID</th><th>Fecha/Hora</th><th>Vendedor</th><th>Ciudad</th><th>Pack</th><th>Cant.</th><th>Efectivo</th><th></th></tr></thead><tbody id="histBody"></tbody></table></div>
+          <div class="hist-table-wrap"><table class="hist-table"><thead><tr><th>ID</th><th>Fecha/Hora</th><th>Vendedor</th><th>Ciudad</th><th>Pack</th><th>Cant.</th><th>Método</th><th>Efectivo</th><th></th></tr></thead><tbody id="histBody"></tbody></table></div>
         </div>
       </div>
 
@@ -129,14 +132,16 @@
             <div class="kpi-card"><div class="kpi-label">Pack más vendido</div><div class="kpi-value" id="kpiTop" style="font-size:18px;">—</div></div>
           </div>
           <div class="dash-section"><h3>Packs más vendidos</h3><div id="rankList"></div></div>
+          <div class="dash-section"><h3>Efectivo vs QR</h3><div id="pagoBreakdown"></div></div>
           <div class="dash-section"><h3>Stock crítico</h3><div id="alertList"></div></div>
         </div>
       </div>
 
       <div class="footer-links">
-        <button id="backupBtn">Respaldar datos (.json)</button>
-        <button id="restoreBtn">Restaurar respaldo</button>
+        <button id="backupBtn"></button>
+        <button id="restoreBtn"></button>
         <input type="file" id="restoreFile" accept=".json" class="hidden">
+        <button id="resetAllBtn" class="footer-link-danger">Reiniciar todo (borrar registros)</button>
       </div>
     </div>
   </div>

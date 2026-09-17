@@ -198,6 +198,13 @@ window.addEventListener("resize", positionNavIndicator);
    VENDER
    ============================================================ */
 let packSeleccionado = PACKS[0].id;
+let metodoPagoSeleccionado = "efectivo";
+document.querySelectorAll(".pago-pill").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    metodoPagoSeleccionado = btn.dataset.metodo;
+    document.querySelectorAll(".pago-pill").forEach(b=>b.classList.toggle("selected", b===btn));
+  });
+});
 function renderVender(){
   const grid = document.getElementById("packGrid");
   grid.innerHTML = "";
@@ -240,9 +247,11 @@ document.getElementById("registrarBtn").addEventListener("click", ()=>{
   const qty = parseInt(document.getElementById("qtyInput").value)||0;
   const pack = PACKS.find(p=>p.id===packSeleccionado);
   if(qty<=0 || qty>stockDisponible(pack.id)) return;
-  state.ventas.push({id:state.nextVentaId++, fecha:new Date().toISOString(), rep:state.session.nombre, ciudad:state.session.ciudad, packId:pack.id, cantidad:qty, efectivo:qty*PRECIO_UNITARIO, anulada:false});
+  state.ventas.push({id:state.nextVentaId++, fecha:new Date().toISOString(), rep:state.session.nombre, ciudad:state.session.ciudad, packId:pack.id, cantidad:qty, efectivo:qty*PRECIO_UNITARIO, metodoPago:metodoPagoSeleccionado, anulada:false});
   saveState();
   document.getElementById("qtyInput").value = 1;
+  metodoPagoSeleccionado = "efectivo";
+  document.querySelectorAll(".pago-pill").forEach(b=>b.classList.toggle("selected", b.dataset.metodo==="efectivo"));
   const est = estadoStock(pack.id);
   if(est.cls==="agotado"){ showToast(`⚫ ${pack.nombre} se agotó`, "alert"); }
   else if(est.cls==="bajo"){ showToast(`⚠️ ${pack.nombre} con stock bajo — quedan ${stockDisponible(pack.id)}`, "alert"); }
@@ -374,12 +383,13 @@ function renderHistorial(){
     const fecha = new Date(v.fecha);
     tr.innerHTML = `
       <td>${v.id}</td><td>${fecha.toLocaleDateString('es-BO')} ${fecha.toLocaleTimeString('es-BO',{hour:'2-digit',minute:'2-digit'})}</td>
-      <td>${v.rep}</td><td>${v.ciudad}</td><td>${pack.nombre}</td><td>${v.cantidad}</td><td>Bs ${v.efectivo}</td>
+      <td>${v.rep}</td><td>${v.ciudad}</td><td>${pack.nombre}</td><td>${v.cantidad}</td>
+      <td>${(v.metodoPago||'efectivo')==='qr'?'📱 QR':'💵 Efectivo'}</td><td>Bs ${v.efectivo}</td>
       <td><button class="btn-void" data-id="${v.id}" ${v.anulada?'disabled':''}>${v.anulada?'Anulada':'Anular'}</button></td>
     `;
     body.appendChild(tr);
   });
-  if(mostrado===0){ body.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--ink-soft);padding:24px;">Todavía no hay ventas registradas.</td></tr>`; }
+  if(mostrado===0){ body.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--ink-soft);padding:24px;">Todavía no hay ventas registradas.</td></tr>`; }
   body.querySelectorAll(".btn-void").forEach(btn=>{
     btn.addEventListener("click", ()=>{
       const venta = state.ventas.find(v=>v.id===parseInt(btn.dataset.id));
@@ -399,9 +409,11 @@ function construirDatosReporte(){
   const ventasActivas = state.ventas.filter(v=>!v.anulada);
   const totalUnidades = ventasActivas.reduce((s,v)=>s+v.cantidad,0);
   const totalEfectivo = ventasActivas.reduce((s,v)=>s+v.efectivo,0);
+  const totalPagoEfectivo = ventasActivas.filter(v=>(v.metodoPago||'efectivo')==='efectivo').reduce((s,v)=>s+v.efectivo,0);
+  const totalPagoQr = ventasActivas.filter(v=>v.metodoPago==='qr').reduce((s,v)=>s+v.efectivo,0);
   const filasVentas = [...state.ventas].sort((a,b)=>a.id-b.id).map(v=>{
     const pack = PACKS.find(p=>p.id===v.packId); const f = new Date(v.fecha);
-    return {ID:v.id, Fecha:f.toLocaleDateString('es-BO'), Hora:f.toLocaleTimeString('es-BO'), Vendedor:v.rep, Ciudad:v.ciudad, Pack:pack.nombre, Cantidad:v.cantidad, "Efectivo (Bs)":v.efectivo, Anulada:v.anulada?"Sí":"No"};
+    return {ID:v.id, Fecha:f.toLocaleDateString('es-BO'), Hora:f.toLocaleTimeString('es-BO'), Vendedor:v.rep, Ciudad:v.ciudad, Pack:pack.nombre, Cantidad:v.cantidad, "Método de pago":(v.metodoPago||'efectivo')==='qr'?'QR':'Efectivo', "Monto (Bs)":v.efectivo, Anulada:v.anulada?"Sí":"No"};
   });
   const filasStock = PACKS.map(p=>{
     const disp = stockDisponible(p.id); const est = estadoStock(p.id);
@@ -414,12 +426,15 @@ function construirDatosReporte(){
   const resumen = [
     {Indicador:"Unidades vendidas", Valor:totalUnidades},
     {Indicador:"Efectivo total recaudado (Bs)", Valor:totalEfectivo},
+    {Indicador:"  — pagado en Efectivo (Bs)", Valor:totalPagoEfectivo},
+    {Indicador:"  — pagado en QR (Bs)", Valor:totalPagoQr},
     {Indicador:"Valor total de stock restante (Bs)", Valor: PACKS.reduce((s,p)=>s+stockDisponible(p.id)*PRECIO_UNITARIO,0)},
     {Indicador:"Packs con stock bajo o agotado", Valor: PACKS.filter(p=>{const e=estadoStock(p.id);return e.cls==="bajo"||e.cls==="agotado";}).length},
     {Indicador:"Fecha de generación del reporte", Valor: new Date().toLocaleString('es-BO')},
   ];
   return {filasVentas, filasStock, filasMovimientos, resumen, totalUnidades, totalEfectivo};
 }
+
 
 document.getElementById("exportXlsxBtn").addEventListener("click", ()=>{
   if(typeof XLSX === "undefined"){
@@ -548,6 +563,14 @@ function renderDashboard(){
     const est = estadoStock(p.id); const icon = est.cls==="agotado"?"⚫":"🔴";
     return `<div class="alert-item">${icon} <b>${p.nombre}</b> — ${stockDisponible(p.id)} unidades (${est.label})</div>`;
   }).join("") : `<p style="color:var(--ink-soft);font-size:13px;">Ningún pack en estado crítico.</p>`;
+
+  const efvo = ventasActivas.filter(v=>(v.metodoPago||'efectivo')==='efectivo').reduce((s,v)=>s+v.efectivo,0);
+  const qr = ventasActivas.filter(v=>v.metodoPago==='qr').reduce((s,v)=>s+v.efectivo,0);
+  const totalPago = Math.max(1, efvo+qr);
+  document.getElementById("pagoBreakdown").innerHTML = `
+    <div class="rank-row"><span class="rank-name">💵 Efectivo</span><div class="rank-bar-wrap"><div class="rank-bar" style="width:${(efvo/totalPago)*100}%;"></div></div><span class="rank-val">Bs ${efvo}</span></div>
+    <div class="rank-row"><span class="rank-name">📱 QR</span><div class="rank-bar-wrap"><div class="rank-bar" style="width:${(qr/totalPago)*100}%;"></div></div><span class="rank-val">Bs ${qr}</span></div>
+  `;
 }
 
 
@@ -574,6 +597,17 @@ document.getElementById("restoreFile").addEventListener("change", (e)=>{
     }catch(err){ showToast("El archivo no es un respaldo válido"); }
   };
   reader.readAsText(file);
+});
+
+document.getElementById("resetAllBtn").addEventListener("click", ()=>{
+  const paso1 = confirm("¿Seguro que quieres borrar TODOS los registros? Ventas, historial y movimientos de stock se perderán para siempre. Esto no se puede deshacer.\n\nConsejo: usa primero 'Respaldar datos (.json)' si quieres guardar una copia.");
+  if(!paso1) return;
+  const escrito = prompt('Para confirmar, escribe exactamente: BORRAR');
+  if(escrito !== "BORRAR"){ showToast("Cancelado — no se borró nada"); return; }
+  state = defaultState();
+  saveState();
+  showToast("Todos los registros fueron borrados");
+  showLoginScreen();
 });
 
 /* ============================================================
