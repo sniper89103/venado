@@ -602,7 +602,7 @@ document.getElementById("restoreFile").addEventListener("change", (e)=>{
 document.getElementById("resetAllBtn").addEventListener("click", ()=>{
   const paso1 = confirm("¿Seguro que quieres borrar TODOS los registros? Ventas, historial y movimientos de stock se perderán para siempre. Esto no se puede deshacer.\n\nConsejo: usa primero 'Respaldar datos (.json)' si quieres guardar una copia.");
   if(!paso1) return;
-  const escrito = prompt('Para confirmar, escribe exactamente: BORRAR');
+  const escrito = prompt('Para confirmar, escribe la clave de acceso: ');
   if(escrito !== "BORRAR"){ showToast("Cancelado — no se borró nada"); return; }
   state = defaultState();
   saveState();
