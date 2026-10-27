@@ -4,7 +4,7 @@
    en el mensaje del chat). Solo evita accesos casuales.
    ============================================================ */
 const USERS = [
-  {username:"aracely", password:"venado1", nombre:"Aracely"},
+  {username:"paola", password:"venado1", nombre:"Paola"},
   {username:"usuario2", password:"venado2", nombre:"Usuario 2"},
 ];
 /* La edición de stock/fotos ya no requiere clave — cualquiera con sesión iniciada puede editar */
