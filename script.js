@@ -28,7 +28,7 @@ const TAB_INICIAL = "dashboard";
 
 const PRECIO_UNITARIO = 20;
 const PACKS = [
-  {id:"p1",  nombre:"Pack 1",  detalle:"Pudín Chocolate + Pudín Frutilla + Gelatina de Pata + Flan sabor Vainilla", dotacionInicial:100},
+  
   {id:"p2",  nombre:"Pack 2",  detalle:"Flan Frutilla + Flan Chocolate + Flan Vainilla", dotacionInicial:100},
   {id:"p3",  nombre:"Pack 3",  detalle:"Pudín Chocolate + Pudín Frutilla + Pudín Vainilla", dotacionInicial:100},
   {id:"p4",  nombre:"Pack 4",  detalle:"Jarra 1,5 L + 3 Gelatinas Frambuesa", dotacionInicial:100},
